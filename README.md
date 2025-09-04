@@ -24,6 +24,7 @@ music-genre-bot/.env.example - пример конфигурации для пр
 
 ```
 cd music-genre-bot
+python -m venv venv
 pip install -r requirements.txt
 ```
 
