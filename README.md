@@ -1,73 +1,64 @@
 # Music Genre Classification Bot
 
-## Описание проекта
+## Project Description
 
-Чат-бот для распознавания стиля музыкальных композиций. Принимает MP3 аудиофайлы, классифицирует их по жанру и выдает персонализированные рекомендации.
+A chatbot for recognizing the style of musical compositions. It accepts MP3 audio files, classifies them by genre, and provides personalized recommendations.
 
-## Состав архива
 
-```
-music-genre-bot/src/main.py - основной файл приложения
-music-genre-bot/src/config.py - конфигурация
-music-genre-bot/src/api/v1/endpoints.py - API эндпоинты
-music-genre-bot/src/services/classification_service.py - сервис классификации жанров
-music-genre-bot/src/services/dynamic_recommendation_service.py - сервис рекомендаций
-music-genre-bot/src/schemas/request.py - модели запросов
-music-genre-bot/src/schemas/response.py - модели ответов
-music-genre-bot/requirements.txt - Python зависимости
-music-genre-bot/.env.example - пример конфигурации для прода
-```
+## Instructions for Checking Results
 
-## Инструкции к проверке результата
-
-### 1. Установка зависимостей
+### 1. Installing Dependencies
 
 ```
-cd music-genre-bot
-python -m venv venv
+python -m venv venv # For Windows
+python3 -m venv venv  # For Linux/MacOS
+
+.\venv\Scripts\activate # Windows
+source venv/bin/activate # Linux/MacOS
+
 pip install -r requirements.txt
 ```
 
-### 2. Запуск сервера
+### 2. Running the Server
 
-**Локальный запуск:**
+**Local run:**
 ```
 uvicorn src.main:app --host 0.0.0.0 --port 8000
 ```
 
-**Прод:**
+**Production:**
 
-Скопируйте пример конфигурации:
+Copy the configuration example:
 ```
 cp .env.example .env
 ```
-Отредактировать .env файл для прода.
+Edit the .env file for production.
 
-Запуск сервера:
+Starting the server:
 ```
 python -m src.main
 ```
 
-### 3. Тестирование API
+### 3. API Testing
 
-Сервер запустится на http://localhost:8000
+The server will start at http://localhost:8000
 
-**Интерактивная документация:** http://localhost:8000/docs
+**Interactive documentation:** http://localhost:8000/docs
 
-**Пример запроса через curl:**
+**Example request via curl:**
 ```
 curl -X POST "http://localhost:8000/api/v1/classify" \
      -H "Content-Type: multipart/form-data" \
      -F "file=@test_song.mp3"
 ```
 
-**Ручное тестирование образцов:**
+**Manual testing of samples:**
 ```
 curl -X POST "http://localhost:8000/api/v1/classify" \
      -F "file=@rock_sample.mp3"
 ```
 
-**Пример ответа:**
+**Example response:**
 ```json
 {
   "genre": "rock",
@@ -77,30 +68,30 @@ curl -X POST "http://localhost:8000/api/v1/classify" \
 }
 ```
 
-## Технические детали
+## Technical Details
 
-### Используемые модели
+### Models Used
 
-1. **Классификация жанров:** `dima806/music_genres_classification` (HuggingFace)
+1. **Genre Classification:** `dima806/music_genres_classification` (HuggingFace)
 
-2. **Генерация рекомендаций:** `google/flan-t5-large` (HuggingFace)
+2. **Recommendation Generation:** `google/flan-t5-large` (HuggingFace)
 
-### Поддерживаемые жанры и типы рекомендаций
+### Supported Genres and Recommendation Types
 
-- **Rock:** Похожие группы и композиции
-- **Pop:** Популярные исполнители жанра
-- **Hip-Hop:** Плейлисты и артисты
-- **Classical:** Интересные факты о композиторах
-- **Jazz:** Расслабляющие плейлисты для вечера
-- **Electronic:** Фестивали и топовые диджеи
+- **Rock:** Similar bands and compositions
+- **Pop:** Popular genre artists
+- **Hip-Hop:** Playlists and artists
+- **Classical:** Interesting facts about composers
+- **Jazz:** Relaxing evening playlists
+- **Electronic:** Festivals and top DJs
 
-### Требования к файлам
+### File Requirements
 
-- **Формат:** MP3
-- **Максимальный размер:** 50MB
-- **Максимальная длительность:** 5 минут
+- **Format:** MP3
+- **Maximum size:** 50MB
+- **Maximum duration:** 5 minutes
 
-### Архитектура
+### Architecture
 
 - **Framework:** FastAPI
 - **Audio Processing:** librosa
