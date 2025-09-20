@@ -31,8 +31,6 @@ class Settings(BaseModel):
 
     @classmethod
     def from_env(cls):
-        import os
-
         kwargs = {}
         for field_name in cls.model_fields.keys():
             env_name = field_name.upper()

@@ -1,7 +1,5 @@
-import logging
 from typing import List, Optional
 from transformers import T5Tokenizer, T5ForConditionalGeneration
-import torch
 
 from src.config import get_config, get_logger
 
@@ -24,7 +22,6 @@ class DynamicRecommendationService:
 
             self.model = T5ForConditionalGeneration.from_pretrained(
                 "google/flan-t5-large",
-                dtype=torch.float32,
                 cache_dir=config.settings.model_cache_dir,
                 low_cpu_mem_usage=True
             )
@@ -42,14 +39,21 @@ class DynamicRecommendationService:
             prompt = self._build_prompt(genre)
             input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids
 
+            pad_token_id = None
+            eos_token_id = None
+
+            if self.tokenizer is not None:
+                pad_token_id = getattr(self.tokenizer, 'pad_token_id', None)
+                eos_token_id = getattr(self.tokenizer, 'eos_token_id', None)
+
             outputs = self.model.generate(
                 input_ids,
                 max_new_tokens=200,
                 temperature=0.7,
                 do_sample=True,
                 num_return_sequences=1,
-                pad_token_id=self.tokenizer.pad_token_id,
-                eos_token_id=self.tokenizer.eos_token_id
+                pad_token_id=pad_token_id,
+                eos_token_id=eos_token_id
             )
 
             generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
@@ -82,7 +86,8 @@ class DynamicRecommendationService:
 
             return [recommendations_text] if recommendations_text else []
 
-        except Exception:
+        except Exception as e:
+            logger.error("Error processing generated text: %s", e)
             return []
 
     def is_available(self) -> bool:

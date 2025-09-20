@@ -1,7 +1,7 @@
 import io
 import logging
 from typing import Optional
-from fastapi import UploadFile, File, HTTPException, status
+from fastapi import UploadFile, HTTPException, status
 
 from src.config import get_config
 
@@ -44,7 +44,7 @@ class AudioFileValidator:
             )
 
 
-async def audio_file(file: UploadFile = None) -> UploadFile:
+async def audio_file(file: UploadFile) -> UploadFile:
     if file is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -66,8 +66,8 @@ async def audio_file(file: UploadFile = None) -> UploadFile:
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"File validation error: {e}")
+        logger.error("File validation error: %s", e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to process uploaded file"
-        )
+        ) from e

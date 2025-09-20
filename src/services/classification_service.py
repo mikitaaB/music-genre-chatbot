@@ -1,5 +1,5 @@
 import io
-from typing import Dict, Optional, Tuple, Any
+from typing import Dict, Optional, Tuple, Any, cast
 
 import librosa
 import torch
@@ -16,7 +16,7 @@ config = get_config()
 class ModelManager:
     def __init__(self):
         self._genre_classifier: Optional[Pipeline] = None
-        self._model_config = config.get_audio_model_config()
+        self._model_config: Dict[str, Any] = config.get_audio_model_config()
         self._model_loaded = False
         self._load_model()
 
@@ -35,7 +35,7 @@ class ModelManager:
             self._model_loaded = True
         except Exception as e:
             self._model_loaded = False
-            raise RuntimeError(f"Model initialization failed: {e}")
+            raise RuntimeError(f"Model initialization failed: {e}") from e
 
     def is_model_loaded(self) -> bool:
         return self._model_loaded and self._genre_classifier is not None
@@ -43,12 +43,12 @@ class ModelManager:
     def get_classifier(self) -> Pipeline:
         if not self.is_model_loaded():
             raise RuntimeError("Classification model is not loaded")
-        return self._genre_classifier
+        return cast(Pipeline, self._genre_classifier)
 
 
 class AudioProcessor:
     def __init__(self):
-        self._file_config = config.get_file_config()
+        self._file_config: Dict[str, Any] = config.get_file_config()
         self.sample_rate = self._file_config['sample_rate']
 
     def process_audio_file(self, file_bytes: bytes) -> Tuple[Dict[str, Any], AudioMetadata]:
@@ -77,7 +77,7 @@ class AudioProcessor:
             return audio_dict, metadata
 
         except Exception as e:
-            raise ValueError(f"Unable to process audio file: {e}")
+            raise ValueError(f"Unable to process audio file: {e}") from e
 
     def _validate_audio_quality(self, waveform: np.ndarray) -> None:
         if len(waveform) == 0:
@@ -111,7 +111,7 @@ class ClassificationService:
             )
 
         except Exception as e:
-            raise RuntimeError(f"Classification service error: {e}")
+            raise RuntimeError(f"Classification service error: {e}") from e
 
     def _classify_genre(self, audio_dict: Dict[str, Any]) -> str:
         try:
@@ -121,13 +121,16 @@ class ClassificationService:
             if not results:
                 raise RuntimeError("No classification results")
 
-            primary_result = results[0]
-            genre = primary_result["label"].lower().strip()
+            primary_result = results[0] if isinstance(results, list) else results
+            if isinstance(primary_result, dict) and "label" in primary_result:
+                genre = primary_result["label"].lower().strip()
+            else:
+                genre = str(primary_result).lower().strip()
 
             return genre
 
         except Exception as e:
-            raise RuntimeError(f"Model inference error: {e}")
+            raise RuntimeError(f"Model inference error: {e}") from e
 
 
 _classification_service: Optional[ClassificationService] = None
